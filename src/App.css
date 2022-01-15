@@ -6,13 +6,59 @@
 
 .friendMessageBox {
     background-color: #e0e0e0;
+    text-align: left;
     font-size: large;
 }
 
-/* .App {
+.App {
   text-align: center;
 }
 
+.friendWidth {
+    width: 160px;
+}
+
+.friendButton {
+    width: 60px;
+    padding: 5px;
+    font-size: small;
+    cursor: pointer;
+}
+
+.chatList {
+    display: flex;
+    font-size: 32;
+    text-align: center;
+    padding-left: 10px;
+}
+.chatList:hover {
+    background-color: aqua;
+    cursor: pointer;
+}
+
+.friendList {
+    display: flex;
+    font-size: 32;
+    text-align: center;
+    padding-left: 10px;
+}
+
+.title {
+    display: contents;
+    font-size: large;
+    text-align: center;
+    align-items: center;
+}
+
+.textInput{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.textWidth{
+    width: 400px;
+}
+/*
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -33,6 +79,78 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   /* color: white; */
+}
+.container {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 15px;
+}
+
+.button {
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 10px 20px;
+}
+.button1:hover {
+    background-color: #9bddfa;
+}
+.leftCol1 {
+    position: absolute;
+    overflow: auto;
+    right: 80%;
+    left: 5%;
+    top: 25%;
+    bottom: 13%;
+    background: #aabbcc;
+}
+
+.leftCol2 {
+    position: absolute;
+    overflow: auto;
+    right: 80%;
+    left: 5%;
+    top: 87%;
+    bottom: 5%;
+    background: #aabbcc;
+}
+
+.midCol1 {
+    position: absolute;
+    overflow: auto;
+    right: 60%;
+    left: 22%;
+    top: 25%;
+    bottom: 13%;
+    background: #ffe18f;
+}
+
+.midCol2 {
+    position: absolute;
+    overflow: auto;
+    right: 60%;
+    left: 22%;
+    top: 87%;
+    bottom: 5%;
+    background: #ffe18f;
+}
+.rightCol1 {
+    position: absolute;
+    overflow: auto;
+    left: 42%;
+    right: 5%;
+    top: 25%;
+    bottom: 13%;
+    width: 53%;
+}
+.rightCol2 {
+    position: absolute;
+    overflow: auto;
+    left: 42%;
+    right: 5%;
+    top: 87%;
+    bottom: 5%;
+    width: 53%;
 }
 /*
 .App-link {
