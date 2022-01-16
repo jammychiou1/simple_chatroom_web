@@ -7,52 +7,49 @@ class App extends Component{
   constructor(props){
     super(props);
     this.state = {
-      login: true,
+      login: false,
       inChat: false,
-      username: "daodaodao",
+      username: "",
       password: "",
-      friend: "jammy",
+      friend: "",
       error: 0,
       chatRoomID: -1,
       messageTail: 0,
       friendBuf: "",
       chatroomBuf: "",
-      friendList: ["fuckyou1", "fuckyou2"],
-      chatroomList: [{"friend": "fuckyou1", "id": 1}, {"friend": "fuckyou2", "id": 2}],
+      friendList: [],
+      chatroomList: [],
       textBuf: "",
-      message: [
-          {
-            "from": "daodaodao", 
-            "type": "text",
-            "data": "hello from daodaodao",
-            "token": ""
-          },
-          {
-            "from": "jammy",
-            "type": "text",
-            "data": "hi",
-            "token": ""
-          },
-        ]
-      ,
-
+      message: [],
+      timerIsSet: false
     };
   }
-  componentDidMount() {
-    if(this.state.inChat === true){
+  componentDidUpdate() {
+    if(this.state.inChat === true && this.state.timerIsSet === false){
       this.timerId = setInterval(this.updateMessage, 1000)
+      console.log('set timer')
+      this.setState({
+          timerIsSet: true
+      })
     }
   }
   componentWillUnmount() {
     clearInterval(this.timerId)
+    this.setState({
+      timerIsSet: false
+    })
   }
   updateMessage = () => {
-    fetch(`${window.location.host}/chatrooms/${this.state.chatRoomID}/messages?begin=${this.state.messageTail}`, {method: 'GET'}).then(
-      res => {
-        const data = res.json()
+    fetch(`/chatrooms/${this.state.chatRoomID}/messages?begin=${this.state.messageTail}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${window.btoa(this.state.username+':'+this.state.password)}` 
+      }
+    }).then(res => res.json())
+    .then(data => {
         if (data["result"] !== []) {
           let currentMsg = this.state.message
-          currentMsg.push(data["result"])
+          currentMsg = currentMsg.concat(data["result"]) 
           this.setState({
             message: currentMsg,
             messageTail: currentMsg.length
@@ -84,12 +81,14 @@ class App extends Component{
   sendMessage = () => {
     console.log(this.state.textBuf)
     if (this.state.textBuf !== "") {
-      fetch(`${window.location.host}/chatrooms/${this.state.chatRoomID}/message`, {
+      fetch(`/chatrooms/${this.state.chatRoomID}/message`, {
         method: 'PUT',
+        headers: {
+          'Authorization': `Basic ${window.btoa(this.state.username+':'+this.state.password)}` 
+        },
         body: JSON.stringify({"message":this.state.textBuf})
-      }).then(
-        res => {
-          const data = res.json()
+      }).then(res => res.json())
+      .then(data => {
           if(data["result"] !== "ok"){
             alert("message not sent")
           }
@@ -117,34 +116,35 @@ class App extends Component{
   }
   Login = () => {
     console.log("login")
-    fetch(`${window.location.host}/login`, {
+    fetch(`/check`, {
       method: 'GET',
       headers: {
         'Authorization': `Basic ${window.btoa(this.state.username+':'+this.state.password)}` 
       }
-    }).then(response => {
-      response = response.json()
-      if(response["result"] ===  "ok"){
+    }).then(response => response.json())
+    .then(data => {
+      if(data["result"] ===  "yes"){
         this.setState({
           login: true,
           error: 0
         })
+        this.fetchChatroom()
+        this.fetchFriend()
       } else {
         this.setState({
           error: 1
         })
       }
     })
-    this.fetchChatroom()
   }
   Register = () => {
     console.log("register")
-    fetch(`${window.location.host}/register`, {
+    fetch(`/register`, {
       method: 'POST',
       body: JSON.stringify({"username":this.state.username, "password":this.state.password})
-    }).then(response => {
-      response = response.json()
-      if(response["result"] ===  "ok"){
+    }).then(response => response.json())
+    .then(data => {
+      if(data["result"] ===  "yes"){
         this.setState({
           login: true,
           error: 0
@@ -166,24 +166,29 @@ class App extends Component{
     })
   }
   fetchChatroom = () => {
-    fetch(`${window.location.host}/chatrooms`, {method: 'GET'}).then(
-      res => {
-        const data = res.json()
+    fetch(`/chatrooms`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${window.btoa(this.state.username+':'+this.state.password)}` 
+      }
+    }).then(res => res.json())
+    .then(data => {
         this.setState({
           chatroomList: data["result"],
-          inChat: true
         })
       }
     )
   }
   addChatroom = () => {
     if(this.state.chatroomBuf !== ""){
-      fetch(`${window.location.host}/chatrooms`, {
+      fetch(`/chatrooms`, {
         method: 'PUT',
+        headers: {
+          'Authorization': `Basic ${window.btoa(this.state.username+':'+this.state.password)}` 
+        },
         body: JSON.stringify({"friend":this.state.chatroomBuf})
-      }).then(
-        res => {
-          const data = res.json()
+      }).then(res => res.json())
+      .then(data => {
           const id = data["result"]
           if (id !== -1){
             let currentChatList = this.state.chatroomList
@@ -194,31 +199,39 @@ class App extends Component{
             })
           } else {
             alert("add chatroom failed")
+            this.setState({
+              chatroomBuf: ""
+            })
           }
         })
     }
   }
   fetchFriend = () => {
-    fetch(`${window.location.host}/friends`, {method: 'GET'}).then(
-      res => {
-        const data = res.json()
+    fetch(`/friends`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${window.btoa(this.state.username+':'+this.state.password)}` 
+      }
+    }).then(res => res.json())
+    .then(data => {
         this.setState({
           friendList: data["result"],
-          inChat: true
         })
       }
     )
   }
   addFriend = () => {
     if(this.state.friendBuf !== ""){
-      fetch(`${window.location.host}/friends`, {
+      fetch(`/friends`, {
         method: 'PUT',
+        headers: {
+          'Authorization': `Basic ${window.btoa(this.state.username+':'+this.state.password)}` 
+        },
         body: JSON.stringify({"friend":this.state.friendBuf})
-      }).then(
-        res => {
-          const data = res.json()
+      }).then(res => res.json())
+      .then(data => {
           if (data["result"] === "ok"){
-            let currentFriendList = this.state.chatroomList
+            let currentFriendList = this.state.friendList
             currentFriendList.push(this.state.friendBuf)
             this.setState({
               friendList: currentFriendList,
@@ -226,18 +239,23 @@ class App extends Component{
             })
           } else {
             alert("add friend failed")
+            this.setState({
+              friendBuf: ""
+            })
           }
         })
     }
   }
   deleteFriend = () => {
     if(this.state.friendBuf !== "") {
-      fetch(`${window.location.host}/friends`, {
+      fetch(`/friends`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Basic ${window.btoa(this.state.username+':'+this.state.password)}` 
+        },
         body: JSON.stringify({"friend":this.state.friendBuf})
-      }).then(
-        res => {
-          const data = res.json()
+      }).then(res => res.json())
+      .then(data => {
           if (data["result"] === "ok"){
             let currentFriendList = this.state.friendList
             for(let i = 0; i < currentFriendList.length; i++) {
@@ -252,6 +270,9 @@ class App extends Component{
             })
           } else{
             alert("delete friend failed")
+            this.setState({
+              friendBuf: ""
+            })
           }
         })
     }
@@ -271,7 +292,7 @@ class App extends Component{
               })}
             </div>
             <div className="leftCol2">
-              <input type="text" className="friendWidth" onChange={this.handleFriendInput.bind(this)}/>
+              <input type="text" className="friendWidth" onChange={this.handleFriendInput.bind(this)} value={this.state.friendBuf}/>
               <button className="friendButton" onClick={this.addFriend.bind(this)}>Add</button>
               <button className="friendButton" onClick={this.deleteFriend.bind(this)}>Delete</button>
             </div>
@@ -282,7 +303,7 @@ class App extends Component{
               })}
             </div>
             <div className="midCol2">
-              <input type="text" className="friendWidth" onChange={this.handleChatroomInput.bind(this)}/>
+              <input type="text" className="friendWidth" onChange={this.handleChatroomInput.bind(this)} value={this.state.chatroomBuf}/>
               <button className="friendButton" onClick={this.addChatroom.bind(this)}>Add</button>
             </div>
             <div className="rightCol1">
@@ -291,18 +312,18 @@ class App extends Component{
                   if(x["type"] === "text"){
                     return <div className="userMessageBox">{x["data"]}</div>
                   } else if(x["type"] === "image") {
-                    return <div className="userMessageBox"><img src={`${window.location.host}/images/${x["token"]}`} alt={x["data"]}></img></div>
+                    return <div className="userMessageBox"><img src={`/images/${x["token"]}`} alt={x["data"]}></img></div>
                   } else if(x["type"] === "file") {
-                    return <div className="userMessageBox"><a href={`${window.location.host}/images/${x["token"]}`}>[{x["data"]}]</a></div>
+                    return <div className="userMessageBox"><a href={`/files/${x["token"]}`}>[{x["data"]}]</a></div>
                   }
                 }
                 else if(x["from"] === this.state.friend){
                   if(x["type"] === "text"){
                     return <div className="friendMessageBox">{x["data"]}</div>
                   } else if(x["type"] === "image") {
-                    return <div className="friendMessageBox"><img src={`${window.location.host}/files/${x["token"]}`} alt={x["data"]}></img></div>
+                    return <div className="friendMessageBox"><img src={`/images/${x["token"]}`} alt={x["data"]}></img></div>
                   } else if(x["type"] === "file") {
-                    return <div className="friendMessageBox"><a href={`${window.location.host}/files/${x["token"]}`}>[{x["data"]}]</a></div>
+                    return <div className="friendMessageBox"><a href={`/files/${x["token"]}`}>[{x["data"]}]</a></div>
                   }
                 }
               })}

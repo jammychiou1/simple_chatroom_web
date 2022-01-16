@@ -15,7 +15,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "move": "cp -r build/static/* ../simple_chatroom_client/static && cp -r build/index.html ../simple_chatroom_client/static"
   },
   "eslintConfig": {
     "extends": [

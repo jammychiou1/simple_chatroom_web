@@ -1,5 +1,5 @@
 .userMessageBox {
-    background-color:#028dde;
+    background-color:#aefc77;
     text-align: right;
     font-size: large;
 }
@@ -41,6 +41,18 @@
     font-size: 32;
     text-align: center;
     padding-left: 10px;
+}
+
+img {
+    max-width: 100%;
+    max-height: 100%;
+    width: 200px;
+    height: auto;
+}
+
+.imageBox {
+    height: 100px;
+    width: 100px;
 }
 
 .title {
